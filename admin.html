@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DHL Admin — Scenario Manager</title>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&display=swap" rel="stylesheet" />
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f0f2f5;
+            padding: 30px 20px;
+        }
+        :root {
+            --dhl-red: #D40511;
+            --dhl-yellow: #FFCC00;
+            --dhl-dark: #1A1A2E;
+            --dhl-gray: #7A7A8A;
+        }
+
+        .admin-card {
+            background: #fff;
+            border-radius: 32px;
+            padding: 32px 36px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-weight: 800;
+            font-size: 2rem;
+            color: var(--dhl-dark);
+            letter-spacing: -0.5px;
+        }
+        .section-title .accent {
+            color: var(--dhl-red);
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--dhl-dark);
+            font-size: 0.9rem;
+        }
+        .form-control,
+        .form-select {
+            border-radius: 12px;
+            border: 2px solid #e5e7eb;
+            padding: 10px 14px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        .form-control:focus,
+        .form-select:focus {
+            border-color: var(--dhl-red);
+            box-shadow: 0 0 0 4px rgba(212, 5, 17, 0.08);
+        }
+
+        .btn-dhl {
+            background: var(--dhl-red);
+            color: #fff;
+            border: none;
+            padding: 10px 28px;
+            border-radius: 60px;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .btn-dhl:hover {
+            background: #b8040e;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(212, 5, 17, 0.3);
+            color: #fff;
+        }
+        .btn-dhl-outline {
+            background: transparent;
+            color: var(--dhl-dark);
+            border: 2px solid #e5e7eb;
+            padding: 10px 28px;
+            border-radius: 60px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .btn-dhl-outline:hover {
+            border-color: var(--dhl-red);
+            color: var(--dhl-red);
+            background: rgba(212, 5, 17, 0.04);
+        }
+        .btn-danger-outline {
+            background: transparent;
+            color: #dc3545;
+            border: 2px solid #f8d7da;
+            padding: 4px 14px;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .btn-danger-outline:hover {
+            background: #dc3545;
+            color: #fff;
+            border-color: #dc3545;
+        }
+
+        .timeline-editor-item {
+            background: #f8fafc;
+            border-radius: 14px;
+            padding: 16px 20px;
+            border: 1px solid #e5e7eb;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        .timeline-editor-item:hover {
+            border-color: var(--dhl-red);
+        }
+
+        .map-node-editor-item {
+            background: #f8fafc;
+            border-radius: 14px;
+            padding: 12px 16px;
+            border: 1px solid #e5e7eb;
+            transition: all 0.3s ease;
+        }
+        .map-node-editor-item:hover {
+            border-color: var(--dhl-red);
+        }
+
+        .preview-box {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 16px;
+            border: 2px dashed #d1d5db;
+            min-height: 100px;
+        }
+        .preview-box .map-dot {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            margin-right: 4px;
+        }
+        .preview-box .map-dot.done {
+            background: #2e7d32;
+        }
+        .preview-box .map-dot.active {
+            background: var(--dhl-red);
+            animation: pulse-dot 1.6s infinite;
+        }
+        .preview-box .map-dot.pending {
+            background: #9ca3af;
+        }
+        @keyframes pulse-dot {
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.3);
+                opacity: 0.6;
+            }
+        }
+
+        .preview-timeline-item {
+            padding: 6px 12px;
+            border-left: 3px solid #d1d5db;
+            margin-bottom: 4px;
+            background: #fff;
+            border-radius: 6px;
+            font-size: 0.85rem;
+        }
+        .preview-timeline-item.done {
+            border-left-color: #2e7d32;
+        }
+        .preview-timeline-item.active {
+            border-left-color: var(--dhl-red);
+            background: rgba(212, 5, 17, 0.04);
+        }
+
+        .badge-status {
+            padding: 4px 16px;
+            border-radius: 60px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .badge-status.in-transit {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        .badge-status.delivered {
+            background: #e3f2fd;
+            color: #0d47a1;
+        }
+        .badge-status.processing {
+            background: #fff3e0;
+            color: #e65100;
+        }
+
+        .code-preview {
+            background: #1a1a2e;
+            border-radius: 16px;
+            padding: 20px;
+            color: #e5e7eb;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            line-height: 1.6;
+            overflow: auto;
+            max-height: 350px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .toast-custom {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #1a1a2e;
+            color: #fff;
+            padding: 14px 28px;
+            border-radius: 16px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+            font-weight: 500;
+            transform: translateY(120px);
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 9999;
+            border-left: 4px solid var(--dhl-yellow);
+        }
+        .toast-custom.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        .empty-state {
+            color: #b0b0c0;
+            font-size: 0.9rem;
+            padding: 20px;
+            text-align: center;
+        }
+        .scenario-badge {
+            background: var(--dhl-yellow);
+            color: var(--dhl-dark);
+            padding: 2px 12px;
+            border-radius: 60px;
+            font-weight: 700;
+            font-size: 0.75rem;
+        }
+
+        @media (max-width: 992px) {
+            .admin-card {
+                padding: 20px 16px;
+            }
+            .section-title {
+                font-size: 1.6rem;
+            }
+        }
+        @media (max-width: 768px) {
+            body {
+                padding: 12px 8px;
+            }
+            .admin-card {
+                padding: 12px 8px;
+                border-radius: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ============================================================
+    TOAST
+    ============================================================ -->
+    <div class="toast-custom" id="toast">
+        <i class="fas fa-check-circle me-2" style="color:var(--dhl-yellow);"></i>
+        <span id="toastMessage">Action completed</span>
+    </div>
+
+    <!-- ============================================================
+    ADMIN PANEL
+    ============================================================ -->
+    <div class="admin-card">
+
+        <!-- Header -->
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+            <div>
+                <h1 class="section-title">
+                    <i class="fas fa-user-cog me-3" style="color:var(--dhl-red);"></i>
+                    Admin <span class="accent">Scenario</span> Manager
+                </h1>
+                <p class="text-muted" style="font-size:0.95rem;">
+                    Create, edit, save, and load tracking scenarios. All data is stored in your browser.
+                </p>
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+                <button class="btn btn-dhl" onclick="saveScenario()">
+                    <i class="fas fa-save me-2"></i> Save Scenario
+                </button>
+                <button class="btn btn-dhl-outline" onclick="exportScenario()">
+                    <i class="fas fa-download me-2"></i> Export JSON
+                </button>
+                <button class="btn btn-dhl-outline" onclick="importScenario()">
+                    <i class="fas fa-upload me-2"></i> Import JSON
+                </button>
+            </div>
+        </div>
+
+        <!-- Scenario Management -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <label class="form-label">Load Scenario</label>
+                <div class="d-flex gap-2">
+                    <select class="form-select" id="scenarioSelect">
+                        <option value="">— Select a scenario —</option>
+                    </select>
+                    <button class="btn btn-dhl-outline" onclick="loadScenario()">
+                        <i class="fas fa-folder-open me-1"></i> Load
+                    </button>
+                    <button class="btn btn-danger-outline" onclick="deleteScenario()">
+                        <i class="fas fa-trash-alt me-1"></i> Delete
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Scenario Name</label>
+                <div class="d-flex gap-2">
+                    <input type="text" class="form-control" id="scenarioNameInput" placeholder="e.g. Express Delivery" />
+                    <button class="btn btn-dhl" onclick="saveScenario()">
+                        <i class="fas fa-plus me-1"></i> Save As
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Editor Grid -->
+        <div class="row g-4">
+
+            <!-- LEFT: EDITOR -->
+            <div class="col-lg-8">
+
+                <!-- Basic Info -->
+                <div class="card border-0 shadow-sm mb-4" style="border-radius:20px;">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-3" style="color:var(--dhl-dark);">
+                            <i class="fas fa-info-circle me-2" style="color:var(--dhl-red);"></i> Basic Information
+                        </h5>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Tracking ID</label>
+                                <input type="text" class="form-control" id="editTrackingId" value="987654321" />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Status</label>
+                                <select class="form-select" id="editStatus">
+                                    <option value="In Transit">In Transit</option>
+                                    <option value="Delivered">Delivered</option>
+                                    <option value="Processing">Processing</option>
+                                    <option value="Out for Delivery">Out for Delivery</option>
+                                    <option value="Exception">Exception</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Est. Delivery</label>
+                                <input type="text" class="form-control" id="editEstDelivery" value="Jul 14, 2026" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Progress (%)</label>
+                                <input type="range" class="form-range" id="editProgress" min="0" max="100" value="65" />
+                                <span class="fw-bold" id="progressDisplay" style="color:var(--dhl-red);">65%</span>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Origin</label>
+                                <input type="text" class="form-control" id="editOrigin" value="New York, USA" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Destination</label>
+                                <input type="text" class="form-control" id="editDestination" value="London, UK" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Weight</label>
+                                <input type="text" class="form-control" id="editWeight" value="2.4 kg" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Service</label>
+                                <input type="text" class="form-control" id="editService" value="Express Worldwide" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Timeline Events -->
+                <div class="card border-0 shadow-sm mb-4" style="border-radius:20px;">
+                    <div class="card-body p-4">
+                        <div class="d-flex flex-wrap align-items-center justify-content-between mb-3">
+                            <h5 class="fw-bold" style="color:var(--dhl-dark);">
+                                <i class="fas fa-clock me-2" style="color:var(--dhl-red);"></i> Timeline Events
+                                <span class="badge bg-secondary rounded-pill ms-2" id="timelineCount">0</span>
+                            </h5>
+                            <button class="btn btn-dhl btn-sm" onclick="addTimelineItem()">
+                                <i class="fas fa-plus me-1"></i> Add Event
+                            </button>
+                        </div>
+                        <div id="timelineEditorContainer"></div>
+                    </div>
+                </div>
+
+                <!-- Map Nodes -->
+                <div class="card border-0 shadow-sm" style="border-radius:20px;">
+                    <div class="card-body p-4">
+                        <div class="d-flex flex-wrap align-items-center justify-content-between mb-3">
+                            <h5 class="fw-bold" style="color:var(--dhl-dark);">
+                                <i class="fas fa-map-marker-alt me-2" style="color:var(--dhl-red);"></i> Map Nodes
+                                <span class="badge bg-secondary rounded-pill ms-2" id="nodeCount">0</span>
+                            </h5>
+                            <button class="btn btn-dhl btn-sm" onclick="addMapNode()">
+                                <i class="fas fa-plus me-1"></i> Add Node
+                            </button>
+                        </div>
+                        <div id="mapNodeEditorContainer"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT: PREVIEW & CODE -->
+            <div class="col-lg-4">
+
+                <!-- Live Preview -->
+                <div class="card border-0 shadow-sm mb-4" style="border-radius:20px;">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-3" style="color:var(--dhl-dark);">
+                            <i class="fas fa-eye me-2" style="color:var(--dhl-red);"></i> Live Preview
+                        </h5>
+                        <div class="d-flex align-items-center gap-2 flex-wrap mb-3">
+                            <span class="badge-status in-transit" id="previewStatusBadge">In Transit</span>
+                            <span class="fw-bold" style="font-size:0.9rem;" id="previewTrackingId">DHL987654321</span>
+                            <span class="text-muted" style="font-size:0.8rem;" id="previewEstDelivery">Est. Jul 14, 2026</span>
+                        </div>
+                        <div class="preview-box mb-3">
+                            <div class="d-flex flex-wrap gap-2 align-items-center" id="mapPreviewNodes">
+                                <!-- injected -->
+                            </div>
+                        </div>
+                        <div class="preview-box" style="max-height:180px;overflow-y:auto;">
+                            <div id="timelinePreviewItems"></div>
+                        </div>
+                        <div class="mt-3">
+                            <div class="d-flex justify-content-between">
+                                <span class="fw-semibold" style="font-size:0.8rem;">Progress</span>
+                                <span class="fw-bold" style="font-size:0.8rem;color:var(--dhl-red);" id="previewProgress">65%</span>
+                            </div>
+                            <div class="progress" style="height:6px;border-radius:10px;">
+                                <div class="progress-bar" id="previewProgressBar" role="progressbar"
+                                style="width:65%;background:linear-gradient(90deg,var(--dhl-red),var(--dhl-yellow));border-radius:10px;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Generated Code -->
+            <div class="card border-0 shadow-sm" style="border-radius:20px;">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-3" style="color:var(--dhl-dark);">
+                        <i class="fas fa-code me-2" style="color:var(--dhl-red);"></i> JavaScript Object
+                    </h5>
+                    <div class="code-preview" id="codePreview"></div>
+                    <button class="btn btn-dhl-outline w-100 mt-3" onclick="copyCode()">
+                        <i class="fas fa-copy me-2"></i> Copy Code
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================
+SCRIPTS
+============================================================ -->
+<script>
+    // ──────────────────────────────────────────────────────────────
+    //  DATA & STATE
+    // ──────────────────────────────────────────────────────────────
+
+    const DEFAULT_SCENARIO = {
+        id: '987654321',
+        status: 'In Transit',
+        estDelivery: 'Jul 14, 2026',
+        progress: 65,
+        origin: 'New York, USA',
+        destination: 'London, UK',
+        weight: '2.4 kg',
+        service: 'Express Worldwide',
+        timeline: [
+            { title: 'Parcel Picked Up', sub: 'Package collected from sender', time: 'Jul 11, 2026 · 09:30 AM',
+                done: true },
+            { title: 'Arrived at Facility', sub: 'New York Sorting Center', time: 'Jul 11, 2026 · 02:15 PM',
+                done: true },
+            { title: 'In Transit', sub: 'Departure from New York', time: 'Jul 12, 2026 · 06:00 AM', done: true },
+            { title: 'Arrived at Destination Hub', sub: 'London Gateway', time: 'Jul 13, 2026 · 10:20 PM',
+                done: false },
+            { title: 'Out for Delivery', sub: 'Estimated delivery today', time: 'Jul 14, 2026 · 08:00 AM',
+                done: false }
+        ],
+        mapNodes: [
+            { label: 'New York', time: 'Jul 11', status: 'done' },
+            { label: 'Transit', time: 'Jul 12', status: 'done' },
+            { label: 'London Hub', time: 'Jul 13', status: 'active' },
+            { label: 'Delivery', time: 'Jul 14', status: 'pending' }
+        ]
+    };
+
+    let currentData = JSON.parse(JSON.stringify(DEFAULT_SCENARIO));
+    let timelineCounter = currentData.timeline.length;
+    let nodeCounter = currentData.mapNodes.length;
+    let scenarios = {}; // key: name, value: data object
+
+    // ──────────────────────────────────────────────────────────────
+    //  DOM REFS
+    // ──────────────────────────────────────────────────────────────
+
+    const $ = id => document.getElementById(id);
+    const timelineEditor = $('timelineEditorContainer');
+    const nodeEditor = $('mapNodeEditorContainer');
+    const mapPreview = $('mapPreviewNodes');
+    const timelinePreview = $('timelinePreviewItems');
+    const codePreview = $('codePreview');
+    const toast = $('toast');
+    const toastMsg = $('toastMessage');
+    const scenarioSelect = $('scenarioSelect');
+    const scenarioNameInput = $('scenarioNameInput');
+
+    // ──────────────────────────────────────────────────────────────
+    //  UTILITIES
+    // ──────────────────────────────────────────────────────────────
+
+    function showToast(msg, isError = false) {
+        toastMsg.textContent = msg;
+        toast.style.borderLeftColor = isError ? '#dc3545' : 'var(--dhl-yellow)';
+        toast.classList.add('show');
+        clearTimeout(toast._hide);
+        toast._hide = setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
+    function getProgress() {
+        return parseInt($('editProgress').value);
+    }
+
+    function syncFormToData() {
+        currentData.id = $('editTrackingId').value.trim() || '987654321';
+        currentData.status = $('editStatus').value;
+        currentData.estDelivery = $('editEstDelivery').value.trim() || 'Jul 14, 2026';
+        currentData.progress = parseInt($('editProgress').value);
+        currentData.origin = $('editOrigin').value.trim() || 'New York, USA';
+        currentData.destination = $('editDestination').value.trim() || 'London, UK';
+        currentData.weight = $('editWeight').value.trim() || '2.4 kg';
+        currentData.service = $('editService').value.trim() || 'Express Worldwide';
+        // Sync timeline & nodes from DOM
+        syncTimelineFromDOM();
+        syncNodesFromDOM();
+    }
+
+    function syncTimelineFromDOM() {
+        const items = timelineEditor.querySelectorAll('.timeline-editor-item');
+        items.forEach((el, idx) => {
+            if (currentData.timeline[idx]) {
+                const title = el.querySelector('input[data-field="title"]');
+                const sub = el.querySelector('input[data-field="sub"]');
+                const time = el.querySelector('input[data-field="time"]');
+                const done = el.querySelector('input[data-field="done"]');
+                if (title) currentData.timeline[idx].title = title.value;
+                if (sub) currentData.timeline[idx].sub = sub.value;
+                if (time) currentData.timeline[idx].time = time.value;
+                if (done) currentData.timeline[idx].done = done.checked;
+            }
+        });
+    }
+
+    function syncNodesFromDOM() {
+        const items = nodeEditor.querySelectorAll('.map-node-editor-item');
+        items.forEach((el, idx) => {
+            if (currentData.mapNodes[idx]) {
+                const label = el.querySelector('input[data-field="label"]');
+                const time = el.querySelector('input[data-field="time"]');
+                const status = el.querySelector('select[data-field="status"]');
+                if (label) currentData.mapNodes[idx].label = label.value;
+                if (time) currentData.mapNodes[idx].time = time.value;
+                if (status) currentData.mapNodes[idx].status = status.value;
+            }
+        });
+    }
+
+    function dataToForm() {
+        $('editTrackingId').value = currentData.id;
+        $('editStatus').value = currentData.status;
+        $('editEstDelivery').value = currentData.estDelivery;
+        $('editProgress').value = currentData.progress;
+        $('progressDisplay').textContent = currentData.progress + '%';
+        $('editOrigin').value = currentData.origin || '';
+        $('editDestination').value = currentData.destination || '';
+        $('editWeight').value = currentData.weight || '';
+        $('editService').value = currentData.service || '';
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    //  RENDER FUNCTIONS
+    // ──────────────────────────────────────────────────────────────
+
+    function renderTimelineEditor() {
+        let html = '';
+        currentData.timeline.forEach((item, idx) => {
+            html += `
+                <div class="timeline-editor-item mb-3" data-index="${idx}">
+                    <div class="row g-2 align-items-start">
+                        <div class="col-md-4">
+                            <input type="text" class="form-control form-control-sm" value="${escapeHtml(item.title)}"
+                                data-field="title" placeholder="Title" />
+                        </div>
+                        <div class="col-md-3">
+                            <input type="text" class="form-control form-control-sm" value="${escapeHtml(item.sub)}"
+                                data-field="sub" placeholder="Subtitle" />
+                        </div>
+                        <div class="col-md-3">
+                            <input type="text" class="form-control form-control-sm" value="${escapeHtml(item.time)}"
+                                data-field="time" placeholder="Time" />
+                        </div>
+                        <div class="col-auto">
+                            <div class="form-check form-switch mt-1">
+                                <input class="form-check-input" type="checkbox" data-field="done" ${item.done ? 'checked' : ''} />
+                                <label class="form-check-label" style="font-size:0.75rem;">Done</label>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <button class="btn-danger-outline" onclick="removeTimelineItem(${idx})">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        if (!currentData.timeline.length) {
+            html = `<div class="empty-state"><i class="fas fa-inbox me-2"></i>No timeline events.</div>`;
+        }
+        timelineEditor.innerHTML = html;
+        $('timelineCount').textContent = currentData.timeline.length;
+
+        // Attach change events
+        timelineEditor.querySelectorAll('.timeline-editor-item').forEach((el, idx) => {
+            el.querySelectorAll('input[data-field], select[data-field]').forEach(input => {
+                input.addEventListener('input', () => {
+                    const field = input.dataset.field;
+                    const val = input.type === 'checkbox' ? input.checked : input.value;
+                    if (currentData.timeline[idx]) {
+                        currentData.timeline[idx][field] = val;
+                        updateAll();
+                    }
+                });
+            });
+        });
+    }
+
+    function renderMapNodeEditor() {
+        let html = '';
+        currentData.mapNodes.forEach((node, idx) => {
+            html += `
+                <div class="map-node-editor-item mb-2" data-index="${idx}">
+                    <div class="row g-2 align-items-center">
+                        <div class="col-md-3">
+                            <input type="text" class="form-control form-control-sm" value="${escapeHtml(node.label)}"
+                                data-field="label" placeholder="Label" />
+                        </div>
+                        <div class="col-md-2">
+                            <input type="text" class="form-control form-control-sm" value="${escapeHtml(node.time)}"
+                                data-field="time" placeholder="Time" />
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select form-select-sm" data-field="status">
+                                <option value="done" ${node.status === 'done' ? 'selected' : ''}>Done</option>
+                                <option value="active" ${node.status === 'active' ? 'selected' : ''}>Active</option>
+                                <option value="pending" ${node.status === 'pending' ? 'selected' : ''}>Pending</option>
+                            </select>
+                        </div>
+                        <div class="col-auto">
+                            <button class="btn-danger-outline" onclick="removeMapNode(${idx})">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        if (!currentData.mapNodes.length) {
+            html = `<div class="empty-state"><i class="fas fa-map-marker-alt me-2"></i>No map nodes.</div>`;
+        }
+        nodeEditor.innerHTML = html;
+        $('nodeCount').textContent = currentData.mapNodes.length;
+
+        nodeEditor.querySelectorAll('.map-node-editor-item').forEach((el, idx) => {
+            el.querySelectorAll('input[data-field], select[data-field]').forEach(input => {
+                input.addEventListener('input', () => {
+                    const field = input.dataset.field;
+                    const val = input.type === 'checkbox' ? input.checked : input.value;
+                    if (currentData.mapNodes[idx]) {
+                        currentData.mapNodes[idx][field] = val;
+                        updateAll();
+                    }
+                });
+            });
+        });
+    }
+
+    function renderPreview() {
+        const data = currentData;
+
+        // Status badge
+        const badge = $('previewStatusBadge');
+        badge.textContent = data.status;
+        badge.className = 'badge-status';
+        if (data.status === 'In Transit' || data.status === 'Out for Delivery') {
+            badge.classList.add('in-transit');
+        } else if (data.status === 'Delivered') {
+            badge.classList.add('delivered');
+        } else {
+            badge.classList.add('processing');
+        }
+
+        $('previewTrackingId').textContent = 'DHL' + data.id;
+        $('previewEstDelivery').textContent = 'Est. ' + data.estDelivery;
+        $('previewProgress').textContent = data.progress + '%';
+        $('previewProgressBar').style.width = data.progress + '%';
+
+        // Map preview
+        let mapHtml = '';
+        data.mapNodes.forEach(node => {
+            const dotClass = 'map-dot ' + node.status;
+            mapHtml += `
+                <div class="d-flex align-items-center gap-1" style="font-size:0.75rem;">
+                    <span class="${dotClass}"></span>
+                    <span>${escapeHtml(node.label)}</span>
+                    <span style="color:#999;font-size:0.65rem;">${escapeHtml(node.time)}</span>
+                </div>
+            `;
+        });
+        mapPreview.innerHTML = mapHtml || '<span class="text-muted">No nodes</span>';
+
+        // Timeline preview
+        let tlHtml = '';
+        data.timeline.forEach((item, idx) => {
+            const isActive = idx === data.timeline.length - 1 && !item.done;
+            const cls = 'preview-timeline-item' + (item.done ? ' done' : '') + (isActive ? ' active' : '');
+            tlHtml += `
+                <div class="${cls}">
+                    <div style="font-weight:600;">${escapeHtml(item.title)}</div>
+                    <div style="font-size:0.7rem;color:#666;">${escapeHtml(item.sub)}</div>
+                    <div style="font-size:0.65rem;color:#999;">${escapeHtml(item.time)}</div>
+                </div>
+            `;
+        });
+        timelinePreview.innerHTML = tlHtml || '<span class="text-muted">No events</span>';
+    }
+
+    function renderCode() {
+        const data = currentData;
+        const code = `// ============================================================
+        //  DHL TRACKING DATA — Admin generated
+        // ============================================================
+
+        const trackingData = {
+          id: '${data.id}',
+          status: '${data.status}',
+          estDelivery: '${data.estDelivery}',
+          progress: ${data.progress},
+          origin: '${data.origin}',
+          destination: '${data.destination}',
+          weight: '${data.weight}',
+          service: '${data.service}',
+          timeline: [
+            ${data.timeline.map(t => `{
+              title: '${t.title}',
+              sub: '${t.sub}',
+              time: '${t.time}',
+              done: ${t.done}
+            }`).join(',\n            ')}
+          ],
+          mapNodes: [
+            ${data.mapNodes.map(n => `{
+              label: '${n.label}',
+              time: '${n.time}',
+              status: '${n.status}'
+            }`).join(',\n            ')}
+          ]
+        };`;
+        codePreview.textContent = code;
+    }
+
+    function updateAll() {
+        dataToForm();
+        renderTimelineEditor();
+        renderMapNodeEditor();
+        renderPreview();
+        renderCode();
+        // Update scenario select list
+        populateScenarioSelect();
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    //  SCENARIO MANAGEMENT (localStorage)
+    // ──────────────────────────────────────────────────────────────
+
+    function loadScenariosFromStorage() {
+        const stored = localStorage.getItem('dhl_scenarios');
+        if (stored) {
+            try {
+                scenarios = JSON.parse(stored);
+            } catch (e) {
+                scenarios = {};
+            }
+        } else {
+            // seed with default scenario
+            scenarios = {
+                'Default Express': JSON.parse(JSON.stringify(DEFAULT_SCENARIO))
+            };
+            saveScenariosToStorage();
+        }
+        populateScenarioSelect();
+    }
+
+    function saveScenariosToStorage() {
+        localStorage.setItem('dhl_scenarios', JSON.stringify(scenarios));
+    }
+
+    function populateScenarioSelect() {
+        const select = scenarioSelect;
+        select.innerHTML = '<option value="">— Select a scenario —</option>';
+        Object.keys(scenarios).forEach(name => {
+            const opt = document.createElement('option');
+            opt.value = name;
+            opt.textContent = name;
+            select.appendChild(opt);
+        });
+    }
+
+    function loadScenario() {
+        const name = scenarioSelect.value;
+        if (!name || !scenarios[name]) {
+            showToast('⚠️ Please select a valid scenario.', true);
+            return;
+        }
+        currentData = JSON.parse(JSON.stringify(scenarios[name]));
+        timelineCounter = currentData.timeline.length;
+        nodeCounter = currentData.mapNodes.length;
+        scenarioNameInput.value = name;
+        updateAll();
+        showToast('📂 Loaded scenario: ' + name);
+    }
+
+    function saveScenario() {
+        // Sync current data from form and DOM
+        syncFormToData();
+        // Also sync from DOM again to be safe
+        syncTimelineFromDOM();
+        syncNodesFromDOM();
+
+        let name = scenarioNameInput.value.trim();
+        if (!name) {
+            showToast('⚠️ Please enter a scenario name.', true);
+            return;
+        }
+        // Check if overwrite
+        if (scenarios[name]) {
+            if (!confirm(`Scenario "${name}" already exists. Overwrite?`)) return;
+        }
+        scenarios[name] = JSON.parse(JSON.stringify(currentData));
+        saveScenariosToStorage();
+        populateScenarioSelect();
+        scenarioSelect.value = name;
+        showToast('✅ Scenario "' + name + '" saved.');
+    }
+
+    function deleteScenario() {
+        const name = scenarioSelect.value;
+        if (!name || !scenarios[name]) {
+            showToast('⚠️ Select a scenario to delete.', true);
+            return;
+        }
+        if (!confirm(`Delete scenario "${name}"?`)) return;
+        delete scenarios[name];
+        saveScenariosToStorage();
+        populateScenarioSelect();
+        scenarioSelect.value = '';
+        showToast('🗑️ Scenario "' + name + '" deleted.');
+        // Reset to default if current was deleted
+        if (currentData === scenarios[name]) {
+            // not exactly but we can reload default
+            currentData = JSON.parse(JSON.stringify(DEFAULT_SCENARIO));
+            timelineCounter = currentData.timeline.length;
+            nodeCounter = currentData.mapNodes.length;
+            updateAll();
+        }
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    //  EXPORT / IMPORT
+    // ──────────────────────────────────────────────────────────────
+
+    function exportScenario() {
+        syncFormToData();
+        syncTimelineFromDOM();
+        syncNodesFromDOM();
+        const blob = new Blob([JSON.stringify(currentData, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'dhl-scenario.json';
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('📤 Scenario exported as JSON.');
+    }
+
+    function importScenario() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                try {
+                    const data = JSON.parse(ev.target.result);
+                    // Validate minimal structure
+                    if (!data.id || !data.timeline || !data.mapNodes) {
+                        throw new Error('Invalid scenario format.');
+                    }
+                    currentData = data;
+                    timelineCounter = currentData.timeline.length;
+                    nodeCounter = currentData.mapNodes.length;
+                    updateAll();
+                    // Also set scenario name from filename
+                    const name = file.name.replace('.json', '');
+                    scenarioNameInput.value = name;
+                    showToast('📥 Imported scenario from ' + file.name);
+                } catch (err) {
+                    showToast('❌ Failed to import: ' + err.message, true);
+                }
+            };
+            reader.readAsText(file);
+        };
+        input.click();
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    //  ADD / REMOVE ITEMS
+    // ──────────────────────────────────────────────────────────────
+
+    window.addTimelineItem = function() {
+        timelineCounter++;
+        currentData.timeline.push({
+            title: 'New Event ' + timelineCounter,
+            sub: 'Description',
+            time: new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit',
+                minute: '2-digit' }),
+            done: false
+        });
+        updateAll();
+        showToast('➕ Timeline event added');
+    };
+
+    window.removeTimelineItem = function(idx) {
+        if (currentData.timeline.length <= 1) {
+            showToast('⚠️ Keep at least one timeline event.', true);
+            return;
+        }
+        currentData.timeline.splice(idx, 1);
+        updateAll();
+        showToast('🗑️ Timeline event removed');
+    };
+
+    window.addMapNode = function() {
+        nodeCounter++;
+        currentData.mapNodes.push({
+            label: 'Node ' + nodeCounter,
+            time: new Date().toLocaleString('en-US', { month: 'short', day: 'numeric' }),
+            status: 'pending'
+        });
+        updateAll();
+        showToast('➕ Map node added');
+    };
+
+    window.removeMapNode = function(idx) {
+        if (currentData.mapNodes.length <= 1) {
+            showToast('⚠️ Keep at least one map node.', true);
+            return;
+        }
+        currentData.mapNodes.splice(idx, 1);
+        updateAll();
+        showToast('🗑️ Map node removed');
+    };
+
+    // ──────────────────────────────────────────────────────────────
+    //  COPY CODE
+    // ──────────────────────────────────────────────────────────────
+
+    window.copyCode = function() {
+        const code = codePreview.textContent;
+        navigator.clipboard.writeText(code).then(() => {
+            showToast('📋 Code copied to clipboard!');
+        }).catch(() => {
+            const ta = document.createElement('textarea');
+            ta.value = code;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            ta.remove();
+            showToast('📋 Code copied!');
+        });
+    };
+
+    // ──────────────────────────────────────────────────────────────
+    //  INIT
+    // ──────────────────────────────────────────────────────────────
+
+    function init() {
+        loadScenariosFromStorage();
+        // Set default data
+        currentData = JSON.parse(JSON.stringify(DEFAULT_SCENARIO));
+        timelineCounter = currentData.timeline.length;
+        nodeCounter = currentData.mapNodes.length;
+        updateAll();
+        // Set default scenario name
+        scenarioNameInput.value = 'My Scenario';
+        showToast('✨ Admin panel ready. Create or load a scenario.');
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
+</script>
+
+</body>
+</html>
